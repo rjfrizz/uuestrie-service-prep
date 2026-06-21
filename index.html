@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UU Estrie — Service Preparation</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Service Preparation</h1>
+      <p class="tagline">UU Estrie of North Hatley, QC</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="intro">
+      Fill in the details for your service. Your answers save automatically in
+      this browser as you go, so you can close the page and come back later on
+      the same device. When you're ready, use the buttons to get the filled-in
+      <strong>Service Script</strong> and <strong>Order of Service</strong>: a
+      print box will open &mdash; choose <strong>"Save as PDF"</strong> as the
+      destination.
+    </p>
+
+    <div id="save-status" class="save-status" aria-live="polite">Not saved yet</div>
+
+    <form id="service-form" autocomplete="off">
+
+      <!-- ---- Service basics ---- -->
+      <fieldset>
+        <legend>Service basics</legend>
+
+        <label class="field">
+          <span class="label-text">Service title <span class="req">*</span></span>
+          <input type="text" name="serviceTitle" required
+                 placeholder="e.g. The Practice of Gratitude" />
+        </label>
+
+        <div class="row">
+          <label class="field">
+            <span class="label-text">Date <span class="req">*</span></span>
+            <input type="date" name="date" required />
+          </label>
+          <label class="field">
+            <span class="label-text">Service time</span>
+            <input type="text" name="serviceTime" placeholder="10:30 a.m." />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label-text">Location</span>
+          <input type="text" name="location" />
+          <span class="hint">Defaults to the church. Change it for off-site
+            services (e.g. a nature walk).</span>
+        </label>
+
+        <label class="field">
+          <span class="label-text">Service leader name(s) <span class="req">*</span></span>
+          <input type="text" name="serviceLeader" required
+                 placeholder="Your name" />
+        </label>
+
+        <label class="field">
+          <span class="label-text">Musicians</span>
+          <input type="text" name="musicians" />
+        </label>
+      </fieldset>
+
+      <!-- ---- Speaker / format ---- -->
+      <fieldset>
+        <legend>Speaker &amp; format</legend>
+
+        <label class="field">
+          <span class="label-text">What kind of service is this?</span>
+          <select name="serviceType">
+            <option value="guest">A guest speaker / lay leader is presenting</option>
+            <option value="leader-speaker">I (the service leader) am also the speaker</option>
+            <option value="sharing">Sharing service (congregation shares on the theme)</option>
+          </select>
+        </label>
+
+        <label class="field" data-show-for="guest">
+          <span class="label-text">Speaker name</span>
+          <input type="text" name="speaker" placeholder="Guest speaker / lay leader" />
+        </label>
+
+        <label class="field" data-show-for="guest leader-speaker">
+          <span class="label-text">Speaker bio / introduction</span>
+          <textarea name="speakerBio" rows="3"
+            placeholder="A sentence or two the service leader can read to introduce the speaker (optional)."></textarea>
+        </label>
+      </fieldset>
+
+      <!-- ---- Order of service content ---- -->
+      <fieldset>
+        <legend>Order of service content</legend>
+
+        <label class="field">
+          <span class="label-text">Opening words</span>
+          <textarea name="openingWords" rows="4"
+            placeholder="The reading or words you've chosen for the opening. (Chalice-lighting words are pre-set and added for you.)"></textarea>
+          <label class="check"><input type="checkbox" name="omitOpeningWords" />
+            Omit (no opening words this service)</label>
+          <span class="hint">Need ideas? Browse the UUA's collection of worship words:
+            <a href="https://www.uua.org/worship/words" target="_blank" rel="noopener">uua.org/worship/words</a>.</span>
+        </label>
+
+        <label class="field">
+          <span class="label-text">Opening hymn / song</span>
+          <input type="text" name="openingSong" placeholder="Title (and number, if known)" />
+          <label class="check"><input type="checkbox" name="openingSongByMusicians" />
+            Let the musicians choose this one</label>
+          <label class="check"><input type="checkbox" name="omitOpeningSong" />
+            Omit (no opening hymn this service)</label>
+          <span class="hint">Browse the full hymn list by number
+            (<em>Singing the Living Tradition</em> &amp; <em>Singing the Journey</em>):
+            <a href="https://farfringe.com/hymns-in-numerical-order-1-200/" target="_blank" rel="noopener">hymn index</a>.</span>
+        </label>
+
+        <label class="field">
+          <span class="label-text">Story for All Ages</span>
+          <input type="text" name="storyForAllAges"
+                 placeholder="Optional — title and who leads it. Leave blank to omit." />
+        </label>
+
+        <label class="field">
+          <span class="label-text">Reflection / sermon topic</span>
+          <textarea name="reflectionTopic" rows="2"
+            placeholder="The topic or a short description (optional)."></textarea>
+        </label>
+
+        <label class="field">
+          <span class="label-text">Closing hymn / song</span>
+          <input type="text" name="closingSong" placeholder="Title (and number, if known)" />
+          <label class="check"><input type="checkbox" name="closingSongByMusicians" />
+            Let the musicians choose this one</label>
+          <label class="check"><input type="checkbox" name="omitClosingSong" />
+            Omit (no closing hymn this service)</label>
+          <span class="hint">Browse the full hymn list by number
+            (<em>Singing the Living Tradition</em> &amp; <em>Singing the Journey</em>):
+            <a href="https://farfringe.com/hymns-in-numerical-order-1-200/" target="_blank" rel="noopener">hymn index</a>.</span>
+        </label>
+
+        <label class="field">
+          <span class="label-text">Closing words</span>
+          <textarea name="closingWords" rows="3"
+            placeholder="The reading or words you've chosen to close."></textarea>
+          <label class="check"><input type="checkbox" name="omitClosingWords" />
+            Omit (no closing words this service)</label>
+          <span class="hint">Need ideas? Browse the UUA's collection of worship words:
+            <a href="https://www.uua.org/worship/words" target="_blank" rel="noopener">uua.org/worship/words</a>.</span>
+        </label>
+      </fieldset>
+
+      <!-- ---- Promotional image ---- -->
+      <fieldset>
+        <legend>Promotional image</legend>
+        <p class="hint" style="margin-top:0">
+          An image to help promote this service (weekly email, social media,
+          posters). Paste a link <em>or</em> upload a file &mdash; either is fine,
+          and it's optional. Sent to the Programme Team when you submit (it does
+          not appear in the PDFs).
+        </p>
+
+        <label class="field">
+          <span class="label-text">Link to an image</span>
+          <input type="url" name="promoImageUrl"
+                 placeholder="https://… (Google Drive, Dropbox, a web page, etc.)" />
+        </label>
+
+        <label class="field">
+          <span class="label-text">…or upload an image</span>
+          <input type="file" name="promoImageFile" accept="image/*" />
+          <span class="hint">JPG, PNG, etc. Please keep it under 10&nbsp;MB.</span>
+        </label>
+      </fieldset>
+
+      <div class="doc-buttons">
+        <div class="doc-button">
+          <button type="button" id="btn-script" class="btn primary">Print / save Service Script</button>
+          <p class="doc-desc">The full run-of-service script you read from while
+            leading &mdash; every word and cue, with your details filled in.
+            Printed single-sided for the leader.</p>
+        </div>
+        <div class="doc-button">
+          <button type="button" id="btn-oos" class="btn primary">Print / save Order of Service</button>
+          <p class="doc-desc">The bilingual handout for the congregation, laid out
+            twice on one landscape page &mdash; print and cut down the middle to
+            make two inserts.</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="btn-submit" class="btn">Submit to Programme Team</button>
+        <button type="button" id="btn-clear" class="btn ghost">Clear form</button>
+      </div>
+      <div id="submit-status" class="submit-status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
