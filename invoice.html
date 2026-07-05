@@ -11,10 +11,95 @@
 
   <main class="wrap">
     <h1 class="page-title">Invoice Generator</h1>
-    <p class="intro">Coming soon &mdash; create a simple church invoice from line
-      items and save it as a PDF.</p>
+    <p class="intro">
+      Create a simple invoice from the church. Fill in who it's for and the line
+      items, then <strong>Print / save Invoice</strong> &mdash; a print box opens
+      where you choose <strong>"Save as PDF"</strong>. Your entries save
+      automatically in this browser.
+    </p>
+
+    <div id="save-status" class="save-status" aria-live="polite">Not saved yet</div>
+
+    <form id="invoice-form" autocomplete="off">
+
+      <p class="from-note">
+        <strong>From:</strong> Unitarian Universalist Church of North Hatley
+        (UUEstrie), 201 Rue Main, North Hatley, QC&nbsp;&nbsp;J0B&nbsp;2C0
+      </p>
+
+      <!-- ---- Bill to ---- -->
+      <fieldset>
+        <legend>Bill to</legend>
+        <label class="field">
+          <span class="label-text">Name <span class="req">*</span></span>
+          <input type="text" name="billToName" required
+                 placeholder="Person or organization being billed" />
+        </label>
+        <label class="field">
+          <span class="label-text">Address</span>
+          <textarea name="billToAddress" rows="3"></textarea>
+        </label>
+      </fieldset>
+
+      <!-- ---- Invoice meta ---- -->
+      <fieldset>
+        <legend>Invoice details</legend>
+        <div class="row">
+          <label class="field">
+            <span class="label-text">Invoice number</span>
+            <input type="text" name="invoiceNumber" />
+          </label>
+          <label class="field">
+            <span class="label-text">Invoice date</span>
+            <input type="date" name="invoiceDate" />
+          </label>
+          <label class="field">
+            <span class="label-text">Due date</span>
+            <input type="date" name="dueDate" />
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- ---- Line items ---- -->
+      <fieldset>
+        <legend>Line items</legend>
+        <div class="line-items">
+          <div class="li-head">
+            <span class="li-desc">Description</span>
+            <span class="li-qty">Qty</span>
+            <span class="li-price">Unit price</span>
+            <span class="li-total">Amount</span>
+            <span class="li-remove" aria-hidden="true"></span>
+          </div>
+          <div id="line-rows"></div>
+        </div>
+        <button type="button" id="btn-add-row" class="btn ghost">+ Add line item</button>
+
+        <div class="invoice-total-row">
+          <span>Total</span>
+          <span id="grand-total">—</span>
+        </div>
+      </fieldset>
+
+      <!-- ---- Notes ---- -->
+      <fieldset>
+        <legend>Notes / payment terms</legend>
+        <label class="field">
+          <span class="label-text">Printed at the bottom of the invoice</span>
+          <textarea name="notes" rows="2"></textarea>
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="btn-invoice" class="btn primary">Print / save Invoice</button>
+        <button type="button" id="btn-clear" class="btn ghost">Clear form</button>
+      </div>
+    </form>
   </main>
 
   <script src="js/nav.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/invoice-render.js"></script>
+  <script src="js/invoice.js"></script>
 </body>
 </html>

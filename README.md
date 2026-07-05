@@ -1,35 +1,50 @@
-# UU Estrie — Service Preparation
+# UU Estrie — Internal Tools
 
-A shareable web form for the week's **service leader**. They answer questions
-about their service, and the page produces two ready-to-print PDFs (via the
-browser's print dialog → "Save as PDF"):
+A small static site of helpers for the congregation. A shared menu (injected by
+`js/nav.js`) links between the tools. No login or password; every tool
+auto-saves progress in the visitor's browser.
 
-- **Service Script** — the full spoken-word script, filled in.
-- **Order of Service** — the bilingual insert, laid out **twice on one
-  landscape page** so it can be printed and **cut in half**.
+**Tools**
 
-PDFs are generated with the browser's native print engine, so they have
-selectable text and reliable pagination with no extra libraries.
+1. **Service Prep** (`service-prep.html`) — the week's service leader answers
+   questions and gets two ready-to-print PDFs: the **Service Script** (full
+   spoken-word script) and the **Order of Service** (bilingual insert, laid out
+   twice on one landscape page to print and cut in half). Optionally submits to
+   a Google Sheet and emails the date + chosen hymns to the musicians.
+2. **Expense Reimbursement** (`reimbursement.html`) — submit a receipt/invoice
+   (with an image or PDF upload) to be paid back; the request is recorded to a
+   Google Sheet tab and emailed to the treasurer.
+3. **Invoice Generator** (`invoice.html`) — build a simple church invoice from
+   line items and print/save it as a PDF. No backend needed.
 
-Progress **auto-saves in the leader's browser**, so they can close the page and
-come back later on the same device. No login or password.
-
-On submit, the answers are also recorded in a **Google Sheet**, and an email
-with the **date and chosen hymns** is sent to the musicians
-(`rjfrizz@gmail.com`) — both handled by the included Google Apps Script
-(optional; the PDFs work without it).
+All PDFs are produced with the browser's native print engine (→ "Save as PDF"),
+so they have selectable text and reliable pagination with no extra libraries.
 
 ## Files
 
 ```
-index.html            The form
-css/styles.css         Styling (form + the two documents)
-js/config.js           ← edit church defaults + the Sheet URL here
-js/templates.js        Renders the Script & Order of Service from the answers
-js/app.js              Auto-save, print-to-PDF, submission
-apps-script/Code.gs    Google Apps Script for the Sheet (copy-paste)
+index.html             Home page (cards linking to each tool)
+service-prep.html      Service prep form
+reimbursement.html     Expense reimbursement form
+invoice.html           Invoice generator
+css/styles.css         Shared styling (site + forms + printed documents)
+js/config.js           ← edit church defaults, emails, and the Sheet URL here
+js/nav.js              Shared header/menu (add a tool = one entry in TOOLS)
+js/templates.js        Renders the Service Script & Order of Service
+js/app.js              Service prep: auto-save, print-to-PDF, submission
+js/reimbursement.js    Reimbursement: auto-save, submission
+js/invoice-render.js   Pure invoice → HTML rendering
+js/invoice.js          Invoice: line items, totals, auto-save, print-to-PDF
+apps-script/Code.gs    Google Apps Script (service prep + reimbursement)
 docs/                  The original source templates
 ```
+
+## Adding another tool
+
+1. Create `yourtool.html` (copy an existing page: it needs
+   `<div id="site-nav"></div>` and `<script src="js/nav.js"></script>`).
+2. Add one entry to `TOOLS` in `js/nav.js`.
+3. Add a card for it on `index.html`.
 
 ## Run it locally
 
@@ -51,7 +66,20 @@ python3 -m http.server 8000
 
 (The included `.nojekyll` file tells Pages to serve the files as-is.)
 
-## Connect the Google Sheet + hymn email (optional)
+## Connect the Google Sheet + emails (optional)
+
+One Apps Script deployment serves **both** the Service Prep and Reimbursement
+forms (it branches on a `formType` field in the request):
+
+- **Service prep** → the tab set by `TARGET_GID`, emails hymn choices to
+  `NOTIFY_EMAIL`.
+- **Reimbursement** → a `Reimbursements` tab (created automatically), emails the
+  request to `TREASURER_EMAIL`, and saves an uploaded receipt to the
+  `UU Estrie Reimbursement Receipts` Drive folder.
+
+Set `NOTIFY_EMAIL` and `TREASURER_EMAIL` at the top of `Code.gs`, and the
+matching `CONFIG.treasurerEmail` in `js/config.js`. The **Invoice Generator**
+needs no backend.
 
 The destination spreadsheet is already set in `Code.gs` via `SPREADSHEET_ID`
 (currently the

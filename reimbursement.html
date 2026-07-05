@@ -11,10 +11,118 @@
 
   <main class="wrap">
     <h1 class="page-title">Expense Reimbursement</h1>
-    <p class="intro">Coming soon &mdash; a form to submit a receipt or invoice
-      for reimbursement of a church expense.</p>
+    <p class="intro">
+      Spent your own money on something for the church? Fill this in to be paid
+      back. Attach a photo or PDF of the receipt/invoice. Your answers save
+      automatically in this browser, and the request goes to the treasurer when
+      you submit.
+    </p>
+
+    <div id="save-status" class="save-status" aria-live="polite">Not saved yet</div>
+
+    <form id="reimbursement-form" autocomplete="off">
+
+      <!-- ---- Who ---- -->
+      <fieldset>
+        <legend>Your details</legend>
+
+        <label class="field">
+          <span class="label-text">Your name <span class="req">*</span></span>
+          <input type="text" name="claimantName" required placeholder="Full name" />
+        </label>
+
+        <label class="field">
+          <span class="label-text">Your email <span class="req">*</span></span>
+          <input type="email" name="claimantEmail" required
+                 placeholder="So the treasurer can reach you" />
+        </label>
+      </fieldset>
+
+      <!-- ---- The expense ---- -->
+      <fieldset>
+        <legend>The expense</legend>
+
+        <div class="row">
+          <label class="field">
+            <span class="label-text">Date of expense <span class="req">*</span></span>
+            <input type="date" name="expenseDate" required />
+          </label>
+          <label class="field">
+            <span class="label-text">Amount (CAD) <span class="req">*</span></span>
+            <input type="number" name="amount" required min="0" step="0.01"
+                   placeholder="0.00" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="label-text">What was it for? <span class="req">*</span></span>
+          <textarea name="description" rows="2" required
+            placeholder="e.g. Coffee and supplies for coffee hour"></textarea>
+        </label>
+      </fieldset>
+
+      <!-- ---- How to pay you back ---- -->
+      <fieldset>
+        <legend>How should we pay you back?</legend>
+
+        <label class="field">
+          <span class="label-text">Payment method</span>
+          <select name="paymentMethod">
+            <option value="etransfer">Interac e-Transfer</option>
+            <option value="cheque">Cheque (mailed)</option>
+            <option value="banktransfer">Bank transfer</option>
+          </select>
+        </label>
+
+        <label class="field" data-pay-for="etransfer">
+          <span class="label-text">e-Transfer to (email or phone)</span>
+          <input type="text" name="etransferContact"
+                 placeholder="The email or phone registered for Interac e-Transfer" />
+        </label>
+
+        <label class="field" data-pay-for="cheque">
+          <span class="label-text">Mailing address for the cheque</span>
+          <textarea name="mailingAddress" rows="3"
+            placeholder="Street, city, province, postal code"></textarea>
+        </label>
+
+        <p class="field-note" data-pay-for="banktransfer">
+          For your security, please don't enter banking details here. If your
+          bank details aren't already on file with the church, the finance
+          convenor will reach out to collect them securely.
+        </p>
+      </fieldset>
+
+      <!-- ---- Receipt ---- -->
+      <fieldset>
+        <legend>Receipt / invoice</legend>
+        <p class="hint" style="margin-top:0">
+          Attach a photo or PDF of the receipt, <em>or</em> paste a link to it.
+          Please include something showing the amount.
+        </p>
+
+        <label class="field">
+          <span class="label-text">Upload receipt (image or PDF)</span>
+          <input type="file" name="receiptFile" accept="image/*,application/pdf" />
+          <span class="hint">Please keep it under 10&nbsp;MB.</span>
+        </label>
+
+        <label class="field">
+          <span class="label-text">…or link to the receipt</span>
+          <input type="url" name="receiptUrl" placeholder="https://…" />
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="btn-submit" class="btn primary">Submit reimbursement request</button>
+        <button type="button" id="btn-clear" class="btn ghost">Clear form</button>
+      </div>
+      <div id="submit-status" class="submit-status" aria-live="polite"></div>
+    </form>
   </main>
 
   <script src="js/nav.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/reimbursement.js"></script>
 </body>
 </html>

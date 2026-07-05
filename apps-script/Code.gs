@@ -14,11 +14,22 @@
 var SPREADSHEET_ID = '1UOYF-oWVP3x3FBgxkgRY4OLEKuJRxMU1fokwknxOH-4';
 var TARGET_GID = 0; // which tab to write to (gid from the sheet URL)
 
-// Where the notification is sent.
+// Who is notified about each form. To notify several people, separate the
+// addresses with commas, e.g. 'a@example.com, b@example.com'.
+//
+// Service-prep submissions (hymn choices etc.):
 var NOTIFY_EMAIL = 'rjfrizz@gmail.com';
+// Reimbursement requests (the treasurer, and anyone else who should see them):
+var TREASURER_EMAIL = 'rjfrizz@gmail.com';
 
 // Drive folder where uploaded promotional images are stored.
 var IMAGE_FOLDER = 'UU Estrie Service Prep Images';
+
+// Drive folder where uploaded reimbursement receipts are stored.
+var RECEIPT_FOLDER = 'UU Estrie Reimbursement Receipts';
+
+// Tab name for reimbursement rows (created if missing).
+var REIMB_SHEET_NAME = 'Reimbursements';
 
 // Must match CONFIG.submitToken in js/config.js. Deters drive-by bots.
 var SHARED_TOKEN = 'uuestrie-56fd9b823b2ef86f2d44d0c0e53511b2';
@@ -54,6 +65,21 @@ var FIELDS = [
   'omitClosingWords'
 ];
 
+// Column order for the Reimbursements tab.
+var REIMB_FIELDS = [
+  'submittedAt',
+  'claimantName',
+  'claimantEmail',
+  'expenseDate',
+  'amount',
+  'description',
+  'paymentMethod',
+  'etransferContact',
+  'mailingAddress',
+  'receiptUrl',
+  'receiptLink'
+];
+
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
@@ -62,6 +88,19 @@ function doPost(e) {
     if (SHARED_TOKEN && data.token !== SHARED_TOKEN) {
       return json({ ok: false, error: 'unauthorized' });
     }
+
+    if (data.formType === 'reimbursement') {
+      return handleReimbursement(data);
+    }
+    return handleService(data);
+  } catch (err) {
+    return json({ ok: false, error: String(err) });
+  }
+}
+
+// --- Service prep submission ------------------------------------------------
+function handleService(data) {
+  try {
     // Reject obvious junk: require the core fields the form makes mandatory.
     if (!str(data.serviceTitle) || !str(data.serviceLeader) || !str(data.date)) {
       return json({ ok: false, error: 'missing required fields' });
@@ -106,6 +145,95 @@ function doPost(e) {
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }
+}
+
+// --- Reimbursement submission -----------------------------------------------
+function handleReimbursement(data) {
+  try {
+    if (!str(data.claimantName) || !str(data.claimantEmail) ||
+        !str(data.expenseDate) || !str(data.amount) || !str(data.description)) {
+      return json({ ok: false, error: 'missing required fields' });
+    }
+    if (data.receiptData && base64Bytes(data.receiptData) > MAX_IMAGE_BYTES) {
+      return json({ ok: false, error: 'receipt too large' });
+    }
+
+    // Save an uploaded receipt (image or PDF) to Drive.
+    var receiptBlob = data.receiptData ? dataUrlToBlob(data.receiptData, data.receiptName) : null;
+    data.receiptLink = '';
+    if (receiptBlob) {
+      try {
+        data.receiptLink = saveBlobToDrive(receiptBlob, RECEIPT_FOLDER);
+      } catch (driveErr) {
+        Logger.log('Receipt save failed: ' + driveErr);
+      }
+    }
+
+    var sheet = getNamedSheet(REIMB_SHEET_NAME);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(REIMB_FIELDS);
+    }
+    sheet.appendRow(REIMB_FIELDS.map(function (f) { return data[f] || ''; }));
+
+    try {
+      sendReimbursementEmail(data, receiptBlob);
+    } catch (mailErr) {
+      Logger.log('Email failed: ' + mailErr);
+    }
+
+    return json({ ok: true });
+  } catch (err) {
+    return json({ ok: false, error: String(err) });
+  }
+}
+
+function sendReimbursementEmail(data, receiptBlob) {
+  var pay;
+  if (data.paymentMethod === 'cheque') {
+    pay = 'Cheque to:\n' + (data.mailingAddress || '(no address given)');
+  } else if (data.paymentMethod === 'banktransfer') {
+    pay = 'Bank transfer (finance convenor to confirm bank details are on file, ' +
+      'or reach out to collect them securely)';
+  } else {
+    pay = 'Interac e-Transfer to: ' + (data.etransferContact || '(none given)');
+  }
+
+  var receipt = data.receiptLink || data.receiptUrl ||
+    (receiptBlob ? 'attached to this email' : '(none provided)');
+
+  var subject = 'Reimbursement request — ' + (data.claimantName || '') +
+    ' — ' + money(data.amount);
+
+  var body = [
+    'Claimant: ' + (data.claimantName || '') + ' <' + (data.claimantEmail || '') + '>',
+    'Date of expense: ' + (data.expenseDate || ''),
+    'Amount: ' + money(data.amount),
+    '',
+    'For: ' + (data.description || ''),
+    '',
+    'Pay back via:',
+    pay,
+    '',
+    'Receipt: ' + receipt
+  ].join('\n');
+
+  var options = {};
+  if (receiptBlob) options.attachments = [receiptBlob];
+  MailApp.sendEmail(TREASURER_EMAIL, subject, body, options);
+}
+
+function money(amount) {
+  var n = parseFloat(amount);
+  if (!isFinite(n)) return String(amount || '');
+  return '$' + n.toFixed(2);
+}
+
+// Get a tab by name from the target spreadsheet, creating it if missing.
+function getNamedSheet(name) {
+  var ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName(name) || ss.insertSheet(name);
 }
 
 // Resolve the destination sheet: the spreadsheet by id (preferred) or the
@@ -170,10 +298,10 @@ function dataUrlToBlob(dataUrl, name) {
   return Utilities.newBlob(bytes, m[1], name || ('promo-' + Date.now()));
 }
 
-// Save the image blob to a Drive folder and return a shareable link.
-function saveImageToDrive(blob) {
-  var folders = DriveApp.getFoldersByName(IMAGE_FOLDER);
-  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(IMAGE_FOLDER);
+// Save a blob to a named Drive folder and return a shareable link.
+function saveBlobToDrive(blob, folderName) {
+  var folders = DriveApp.getFoldersByName(folderName);
+  var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
   var file = folder.createFile(blob);
   try {
     file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
@@ -181,6 +309,11 @@ function saveImageToDrive(blob) {
     Logger.log('Could not set sharing: ' + e);
   }
   return file.getUrl();
+}
+
+// Back-compat wrapper for the service-prep promo image.
+function saveImageToDrive(blob) {
+  return saveBlobToDrive(blob, IMAGE_FOLDER);
 }
 
 // "Musicians' choice" when deferred, otherwise the leader's entry.

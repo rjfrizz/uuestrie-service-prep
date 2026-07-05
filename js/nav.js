@@ -5,7 +5,10 @@
 // =============================================================================
 
 const SITE_NAME = "UU Estrie";
-const SITE_TAGLINE = "of North Hatley, QC";
+const SITE_TAGLINE = "Internal Tools";
+
+// The signature rainbow "stripes" band from uuestrie.ca (7 equal colors).
+const BRAND_STRIPES = ["#CC0000", "#990A9C", "#500A9C", "#0A0D9C", "#5B9C0A", "#FAE300", "#ED5F21"];
 
 // file: page filename (relative). title: menu/label. home: shown as the brand link.
 const TOOLS = [
@@ -27,16 +30,22 @@ const TOOLS = [
     })
     .join("");
 
+  const stripes = BRAND_STRIPES
+    .map((c) => `<span style="background:${c}"></span>`)
+    .join("");
+
   const html = `
     <header class="site-header">
       <div class="wrap header-inner">
         <a class="brand" href="index.html">
-          <span class="brand-name">${SITE_NAME}</span>
+          <img class="brand-logo" src="assets/uuestrie-logo.jpg"
+               alt="${SITE_NAME}" width="240" height="91" />
           <span class="brand-tagline">${SITE_TAGLINE}</span>
         </a>
         <button class="nav-toggle" aria-label="Menu" aria-expanded="false">☰</button>
         <nav class="site-nav">${links}</nav>
       </div>
+      <div class="brand-stripes" aria-hidden="true">${stripes}</div>
     </header>`;
 
   const mount = document.getElementById("site-nav");

@@ -25,4 +25,26 @@ const CONFIG = {
   defaultMaterials:
     "Usual Items: fresh candles, matches, candle extinguisher, " +
     "glass of water for guest speaker, basket for offertory",
+
+  // NOTE: Notification emails (who gets the service-prep and reimbursement
+  // messages) are set in apps-script/Code.gs — NOTIFY_EMAIL and TREASURER_EMAIL —
+  // because the email is sent server-side, not from this page.
+
+  // -- Invoice generator ------------------------------------------------------
+  // The fixed "from" block printed at the top of every invoice.
+  invoiceFrom: {
+    name: "Unitarian Universalist Church of North Hatley (UUEstrie)",
+    addressLines: [
+      "201 Rue Main",
+      "North Hatley, QC  J0B 2C0",
+    ],
+    email: "",
+    phone: "",
+  },
+
+  // Default note / payment terms printed near the bottom of an invoice.
+  invoiceNotes: "Please pay by Interac e-transfer to treasurer@uuestrie.ca",
+
+  // Currency symbol used in invoices.
+  currencySymbol: "$",
 };
