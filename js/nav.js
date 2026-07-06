@@ -38,7 +38,7 @@ const TOOLS = [
     <header class="site-header">
       <div class="wrap header-inner">
         <a class="brand" href="index.html">
-          <img class="brand-logo" src="assets/uuestrie-logo.jpg"
+          <img class="brand-logo" src="assets/uuestrie-logo.jpg?v=2"
                alt="${SITE_NAME}" width="240" height="91" />
           <span class="brand-tagline">${SITE_TAGLINE}</span>
         </a>
