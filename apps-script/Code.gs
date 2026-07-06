@@ -17,8 +17,10 @@ var TARGET_GID = 0; // which tab to write to (gid from the sheet URL)
 // Who is notified about each form. To notify several people, separate the
 // addresses with commas, e.g. 'a@example.com, b@example.com'.
 //
-// Service-prep submissions (hymn choices etc.):
+// Service-prep: concise hymn choices to the musicians:
 var NOTIFY_EMAIL = 'rjfrizz@gmail.com';
+// Service-prep: full form details to communications:
+var SERVICE_DETAILS_EMAIL = 'communications@uuestrie.ca, janetwatson@videotron.ca';
 // Reimbursement requests (the treasurer, and anyone else who should see them):
 var TREASURER_EMAIL = 'rjfrizz@gmail.com';
 
@@ -132,13 +134,18 @@ function handleService(data) {
     var row = FIELDS.map(function (f) { return data[f] || ''; });
     sheet.appendRow(row);
 
-    // Email the details. Wrapped separately so a mail hiccup doesn't
-    // fail the whole submission.
+    // Emails, each wrapped so one failing doesn't fail the submission:
+    //  1. concise hymn choices to the musicians (NOTIFY_EMAIL)
+    //  2. full form details to communications (SERVICE_DETAILS_EMAIL)
     try {
       sendHymnEmail(data, imageBlob);
     } catch (mailErr) {
-      // Log but still report success for the saved row.
-      Logger.log('Email failed: ' + mailErr);
+      Logger.log('Hymn email failed: ' + mailErr);
+    }
+    try {
+      sendServiceDetailsEmail(data, imageBlob);
+    } catch (mailErr2) {
+      Logger.log('Details email failed: ' + mailErr2);
     }
 
     return json({ ok: true });
@@ -275,6 +282,60 @@ function sendHymnEmail(data, imageBlob) {
   var options = {};
   if (imageBlob) options.attachments = [imageBlob];
   MailApp.sendEmail(NOTIFY_EMAIL, subject, body, options);
+}
+
+// Full form details, sent to communications on submit.
+function sendServiceDetailsEmail(data, imageBlob) {
+  var when = prettyDate(data.date) || '(no date given)';
+
+  var types = {
+    guest: 'Guest speaker / lay leader presenting',
+    'leader-speaker': 'Service leader is also the speaker',
+    sharing: 'Sharing service (congregation shares on the theme)'
+  };
+
+  // A field's value, or "(omitted)" / "(blank)" as appropriate.
+  function words(val, omit) {
+    if (omit) return '(omitted)';
+    return str(val) || '(blank)';
+  }
+  function hymn(val, byMusicians, omit) {
+    if (omit) return '(omitted)';
+    return hymnText(val, byMusicians);
+  }
+
+  var promoLink = data.promoImageLink || data.promoImageUrl || '';
+
+  var subject = 'Service details — ' + when +
+    (data.serviceTitle ? ' — ' + data.serviceTitle : '');
+
+  var body = [
+    'SERVICE DETAILS',
+    '',
+    'Title: ' + (str(data.serviceTitle) || '(blank)'),
+    'Date: ' + when,
+    'Time: ' + (str(data.serviceTime) || '(blank)'),
+    'Location: ' + (str(data.location) || '(blank)'),
+    '',
+    'Type: ' + (types[data.serviceType] || data.serviceType || '(blank)'),
+    'Service leader: ' + (str(data.serviceLeader) || '(blank)'),
+    'Speaker: ' + (str(data.speaker) || '(none / same as leader)'),
+    'Speaker bio / intro: ' + (str(data.speakerBio) || '(blank)'),
+    'Musicians: ' + (str(data.musicians) || '(blank)'),
+    '',
+    'Opening words: ' + words(data.openingWords, data.omitOpeningWords),
+    'Opening hymn: ' + hymn(data.openingSong, data.openingSongByMusicians, data.omitOpeningSong),
+    'Story for All Ages: ' + (str(data.storyForAllAges) || '(none)'),
+    'Reflection / sermon topic: ' + (str(data.reflectionTopic) || '(blank)'),
+    'Closing hymn: ' + hymn(data.closingSong, data.closingSongByMusicians, data.omitClosingSong),
+    'Closing words: ' + words(data.closingWords, data.omitClosingWords),
+    '',
+    'Promotional image: ' + (promoLink || (imageBlob ? 'attached to this email' : '(none provided)'))
+  ].join('\n');
+
+  var options = {};
+  if (imageBlob) options.attachments = [imageBlob];
+  MailApp.sendEmail(SERVICE_DETAILS_EMAIL, subject, body, options);
 }
 
 // Trimmed string, or '' for null/undefined.

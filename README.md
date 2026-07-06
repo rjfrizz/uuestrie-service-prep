@@ -103,10 +103,15 @@ To use a different sheet, replace that id (the long string in the sheet's URL).
    - Copy the **Web app URL**.
 5. Paste that URL into `js/config.js` as `CONFIG.sheetEndpoint`, then push.
 
-Each submission appends a row (a header row is created automatically) **and**
-emails the date + opening/closing hymn choices to the address in `NOTIFY_EMAIL`
-at the top of `Code.gs` (currently `rjfrizz@gmail.com`). Hymns left to the
-musicians show as "Musicians' choice".
+Each service-prep submission appends a row (a header row is created
+automatically) **and** sends two emails, both set at the top of `Code.gs`:
+
+- **Hymn choices** (concise) to `NOTIFY_EMAIL` — for the musicians. Hymns left to
+  the musicians show as "Musicians' choice".
+- **Full form details** to `SERVICE_DETAILS_EMAIL` — every field, for
+  communications. Omitted items show as "(omitted)".
+
+Each recipient var accepts a comma-separated list for multiple people.
 
 If the leader provides a **promotional image**, a pasted link is recorded in the
 Sheet and email; an uploaded file is saved to a Drive folder
